@@ -1,3 +1,5 @@
+using System;
+using perfectheart.NPCs;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -29,5 +31,11 @@ namespace perfectheart.Items
 				.AddTile(TileID.WorkBenches)
 				.Register();
 		}
-	}
+
+        public override bool? UseItem(Player player)
+        {
+			NPC.SpawnBoss((int)player.position.X, (int)player.position.Y - 250, ModContent.NPCType<PerfectheartBoss>(), Array.FindIndex(Main.player, x => x == player));
+            return true;
+        }
+    }
 }

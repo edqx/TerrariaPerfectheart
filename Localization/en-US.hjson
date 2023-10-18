@@ -1,0 +1,31 @@
+# This file will automatically update with entries for new content after a build and reload
+
+Mods: {
+	PerfectheartMod: {
+		Items: {
+			heart: {
+				DisplayName: heart
+				Tooltip: ""
+			}
+		}
+
+		NPCs.PerfectheartBoss.DisplayName: Perfectheart
+
+		Dialogue: {
+			FightAttempt1:
+				'''
+				What's this? Are you challenging me to a fight? Oh... You don't want to do that...
+
+				Are you sure about this?
+				'''
+			FightAttempt2:
+				'''
+				Oh... I see... I think it's fair to warn you that you might regret this decision... So... I'll ask again...
+
+				Are you sure you want to challenge me?
+				'''
+			FightAttempt3: Are you really, really sure?
+			FightBegin: ... Alright, then... If that is what you wish. I won't be holding back.
+		}
+	}
+}

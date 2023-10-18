@@ -1,10 +1,10 @@
 using System;
-using perfectheart.NPCs;
+using PerfectheartMod.NPCs;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace perfectheart.Items
+namespace PerfectheartMod.Items
 {
 	public class heart : ModItem
 	{
@@ -34,7 +34,7 @@ namespace perfectheart.Items
 
         public override bool? UseItem(Player player)
         {
-			NPC.SpawnBoss((int)player.position.X, (int)player.position.Y - 250, ModContent.NPCType<PerfectheartBoss>(), Array.FindIndex(Main.player, x => x == player));
+			NPC.SpawnBoss((int)player.position.X + 250, (int)player.position.Y - 40, ModContent.NPCType<PerfectheartBoss>(), Array.FindIndex(Main.player, x => x == player));
             return true;
         }
     }

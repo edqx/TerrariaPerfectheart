@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using Microsoft.Xna.Framework;
+using perfectheart;
 using Terraria;
 using Terraria.Audio;
 using Terraria.Chat;
@@ -13,14 +14,7 @@ namespace PerfectheartMod.NPCs
 {
     public class PerfectheartBoss : ModNPC
     {
-        public enum FightStage {
-            WaitingForFight,
-            FightStarting,
-            PhaseOne
-        }
-
         public int NumFightAttempts = 0;
-        public FightStage Stage;
         public float ascendVelocity = 0f;
 
         public override void SetStaticDefaults()
@@ -45,11 +39,7 @@ namespace PerfectheartMod.NPCs
             Entity.HitSound = SoundID.NPCHit5;
             Entity.despawnEncouraged = false;
 
-            Stage = FightStage.WaitingForFight;
-
             NPCID.Sets.NoTownNPCHappiness[Entity.type] = true;
-
-            Music = MusicLoader.GetMusicSlot(Mod, "Sounds/OMORI OST 130 Teehee Time");
         }
 
         public override bool CanChat()
@@ -101,9 +91,14 @@ namespace PerfectheartMod.NPCs
                     {
 						Main.NewText(Language.GetTextValue("Mods.PerfectheartMod.Dialogue.FightBegin"), Microsoft.Xna.Framework.Color.Pink);
 					}
-                    Stage = FightStage.FightStarting;
+                    PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
                 }
             }
+        }
+
+        public override void OnKill()
+        {
+            PerfectheartBossSystem.BossStage = FightStage.Nil;
         }
 
         public override void AI()
@@ -113,16 +108,15 @@ namespace PerfectheartMod.NPCs
 				Entity.TargetClosest();
 			}
 
-            if (Stage == FightStage.FightStarting) {
+            if (PerfectheartBossSystem.BossStage == FightStage.FightStarting) {
                 Entity.position = Entity.position - new Vector2(0f, ascendVelocity);
                 ascendVelocity += 0.4f;
                 if (ascendVelocity > 16f) {
                     ascendVelocity = 16f;
                 }
                 if (Entity.position.Y < 0) {
-                    Stage = FightStage.PhaseOne;
+                    PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
                 }
-                Mod.Logger.Info($"Position ({Entity.position.X}, {Entity.position.Y})");
                 return;
             }
 

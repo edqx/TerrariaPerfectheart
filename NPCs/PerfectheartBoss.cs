@@ -40,6 +40,8 @@ namespace PerfectheartMod.NPCs
             Entity.despawnEncouraged = false;
 
             NPCID.Sets.NoTownNPCHappiness[Entity.type] = true;
+
+            Music = -1;
         }
 
         public override bool CanChat()

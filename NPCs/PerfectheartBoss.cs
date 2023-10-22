@@ -32,7 +32,6 @@ namespace PerfectheartMod.NPCs
             Entity.width = 75;
             Entity.height = 80;
             Entity.noGravity = true;
-            Entity.boss = true;
             Entity.noTileCollide = true;
             Entity.dontTakeDamage = true;
             Entity.friendly = true;
@@ -94,6 +93,7 @@ namespace PerfectheartMod.NPCs
 						Main.NewText(Language.GetTextValue("Mods.PerfectheartMod.Dialogue.FightBegin"), Microsoft.Xna.Framework.Color.Pink);
 					}
                     PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
+                    Entity.boss = true;
                 }
             }
         }

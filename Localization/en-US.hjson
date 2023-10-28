@@ -7,9 +7,15 @@ Mods: {
 				DisplayName: heart
 				Tooltip: ""
 			}
+
+			LargeTestTube: {
+				DisplayName: Large Test Tube
+				Tooltip: ""
+			}
 		}
 
 		NPCs.PerfectheartBoss.DisplayName: Perfectheart
+		Map.LargeTestTube: Large Test Tube
 
 		Dialogue: {
 			FightAttempt1:

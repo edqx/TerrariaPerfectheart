@@ -45,7 +45,7 @@ namespace PerfectheartMod.NPCs
 
         public override bool CanChat()
         {
-            return NumFightAttempts < 3;
+            return NumFightAttempts <= 3;
         }
 
         public override string GetChat()

@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -12,6 +12,7 @@ namespace PerfectheartMod.Items
 			Item.width = 10;
 			Item.height = 24;
 			Item.value = 500;
+            Item.placeStyle = 0;
 		}
 
 		public override void AddRecipes() {

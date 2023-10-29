@@ -15,6 +15,7 @@ namespace PerfectheartMod.Tiles {
             TileObjectData.newTile.Width = 5;
             TileObjectData.newTile.Height = 9;
             TileObjectData.newTile.CoordinateHeights = new int[]{ 16, 16, 16, 16, 16, 16, 16, 16, 16 };
+            TileObjectData.newTile.Origin = new Terraria.DataStructures.Point16(2, 8);
             TileObjectData.addTile(Type);
 
             AddMapEntry(new Microsoft.Xna.Framework.Color(255, 192, 203), Language.GetText("Mods.PerfectheartMod.Map.LargeTestTube"));

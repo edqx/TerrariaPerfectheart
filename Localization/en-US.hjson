@@ -12,6 +12,11 @@ Mods: {
 				DisplayName: Large Test Tube
 				Tooltip: ""
 			}
+
+			MultiversalTranslocatorModule: {
+				DisplayName: Multiversal Translocator Module
+				Tooltip: ""
+			}
 		}
 
 		NPCs.PerfectheartBoss.DisplayName: Perfectheart

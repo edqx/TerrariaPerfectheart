@@ -38,7 +38,7 @@ namespace PerfectheartMod.Tiles {
             if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178) {
                 Main.LocalPlayer.cursorItemIconEnabled = true;
                 Main.LocalPlayer.cursorItemIconID = -1;
-                Main.LocalPlayer.cursorItemIconText = "Activate";
+                Main.LocalPlayer.cursorItemIconText = Language.GetTextValue("Mods.PerfectheartMod.Dialogue.ActivateLargeTestTube");
                 return;
             }
 

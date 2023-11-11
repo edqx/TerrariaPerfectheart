@@ -23,6 +23,7 @@ Mods: {
 		Map.LargeTestTube: Large Test Tube
 
 		Dialogue: {
+			ActivateLargeTestTube: Activate
 			FightAttempt1:
 				'''
 				What's this? Are you challenging me to a fight? Oh... You don't want to do that...

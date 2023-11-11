@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using PerfectheartMod.Items;
 using PerfectheartMod.NPCs;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
@@ -95,6 +96,7 @@ namespace PerfectheartMod.Tiles {
                     }
                 }
                 SetAllTileFrameX(i, j, 270, 0);
+                SoundEngine.PlaySound(SoundID.Tink);
                 return true;
             }
 
@@ -132,7 +134,12 @@ namespace PerfectheartMod.Tiles {
                 if (frameMs > 1000 * 2) {
                     if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484 && i == topX && j == topY) {
                         Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
+                        SoundEngine.PlaySound(SoundID.Shatter);
                         NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
+                    }
+                    else if (tile.TileFrameY <= 322)
+                    {
+                        SoundEngine.PlaySound(SoundID.Tink);
                     }
                     if (tile.TileFrameY < 486)
                     {

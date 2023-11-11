@@ -1,8 +1,7 @@
-using System.Numerics;
-using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
 using PerfectheartMod.Items;
 using PerfectheartMod.NPCs;
-using ReLogic.Content;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -13,7 +12,7 @@ using Terraria.ObjectData;
 namespace PerfectheartMod.Tiles {
     public class LargeTestTubeTile : ModTile {
         protected int multiversalTranslocatorModuleType;
-        protected int currentTick;
+        protected Dictionary<(int, int), long> frameTimers = new();
 
         public override void SetStaticDefaults()
         {
@@ -24,7 +23,7 @@ namespace PerfectheartMod.Tiles {
             TileObjectData.newTile.Width = 5;
             TileObjectData.newTile.Height = 9;
             TileObjectData.newTile.CoordinateHeights = new int[]{ 16, 16, 16, 16, 16, 16, 16, 16, 16 };
-            TileObjectData.newTile.Origin = new Terraria.DataStructures.Point16(2, 8);
+            TileObjectData.newTile.Origin = new Point16(2, 8);
             TileObjectData.addTile(Type);
 
             AddMapEntry(new Microsoft.Xna.Framework.Color(255, 192, 203), Language.GetText("Mods.PerfectheartMod.Map.LargeTestTube"));
@@ -38,7 +37,7 @@ namespace PerfectheartMod.Tiles {
 
             if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178) {
                 Main.LocalPlayer.cursorItemIconEnabled = true;
-                Main.LocalPlayer.cursorItemIconID = 0;
+                Main.LocalPlayer.cursorItemIconID = -1;
                 Main.LocalPlayer.cursorItemIconText = "Activate";
                 return;
             }
@@ -53,20 +52,38 @@ namespace PerfectheartMod.Tiles {
             }
         }
 
+        public void SetAllTileFrameX(int i, int j, int frameX, int frameY) {
+            Tile tile = Main.tile[i, j];
+            int topX = i - tile.TileFrameX % 90 / 18;
+            int topY = j - tile.TileFrameY % 160 / 18;
+
+            for (int x = topX; x < topX + 5; x++)
+            {
+                for (int y = topY; y < topY + 9; y++)
+                {
+                    Main.tile[x, y].TileFrameX = (short)(frameX + ((x - topX) * 18));
+                    Main.tile[x, y].TileFrameY = (short)(frameY + ((y - topY) * 18));
+                }
+            }
+        }
+
+        public long GetLastFrameTimer(int x, int y) {
+            if (frameTimers.TryGetValue((x, y), out long timer)) return timer;
+
+            long currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            frameTimers[(x, y)] = currentTime;
+            return currentTime;
+        }
+
+        public void SetLastFrameTimer(int x, int y) {
+            frameTimers[(x, y)] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        }
+
         public override bool RightClick(int i, int j)
         {
             Tile tile = Main.tile[i, j];
-            if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178) {
-                int topX = i - tile.TileFrameX % 90 / 18;
-                int topY = j - tile.TileFrameY % 160 / 18;
-                Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
-                NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
-                return true;
-            }
-
-            if (Main.LocalPlayer.inventory[Main.LocalPlayer.selectedItem].type == multiversalTranslocatorModuleType)
+            if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178)
             {
-                Main.LocalPlayer.ConsumeItem(multiversalTranslocatorModuleType);
                 int topX = i - tile.TileFrameX % 90 / 18;
                 int topY = j - tile.TileFrameY % 160 / 18;
 
@@ -74,37 +91,54 @@ namespace PerfectheartMod.Tiles {
                 {
                     for (int y = topY; y < topY + 9; y++)
                     {
-                        Main.tile[x, y].TileFrameX = (short)(90 + ((x - topX) * 18));
-                        Main.tile[x, y].TileFrameY = (short)(0 + ((y - topY) * 18));
+                        SetLastFrameTimer(x, y);
                     }
                 }
+                SetAllTileFrameX(i, j, 270, 0);
+                return true;
+            }
+
+            if (Main.LocalPlayer.inventory[Main.LocalPlayer.selectedItem].type == multiversalTranslocatorModuleType)
+            {
+                Main.LocalPlayer.ConsumeItem(multiversalTranslocatorModuleType);
+                SetAllTileFrameX(i, j, 90, 0);
                 return true;
             }
             return false;
         }
 
-        public override void AnimateTile(ref int frame, ref int frameCounter)
-        {
-            currentTick++;
-
-            if (currentTick > 8) {
-                currentTick = 0;
-            }
-        }
-
         public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
         {
             Tile tile = Main.tile[i, j];
-            if (currentTick == 0)
+            int topX = i - tile.TileFrameX % 90 / 18;
+            int topY = j - tile.TileFrameY % 160 / 18;
+            long frameMs = DateTimeOffset.Now.ToUnixTimeMilliseconds() - GetLastFrameTimer(i, j);
+            if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178)
             {
-                if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178)
-                {
+                if (frameMs > 1000 / 2) {
                     if (tile.TileFrameY >= 162)
                     {
                         tile.TileFrameY -= 162;
-                    } else {
+                    }
+                    else
+                    {
                         tile.TileFrameY += 162;
                     }
+                    SetLastFrameTimer(i, j);
+                }
+            }
+            else if (tile.TileFrameX >= 270 && tile.TileFrameX <= 358)
+            {
+                if (frameMs > 1000 * 2) {
+                    if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484 && i == topX && j == topY) {
+                        Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
+                        NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
+                    }
+                    if (tile.TileFrameY < 486)
+                    {
+                        tile.TileFrameY += 162;
+                    }
+                    SetLastFrameTimer(i, j);
                 }
             }
         }

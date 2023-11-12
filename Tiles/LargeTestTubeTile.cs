@@ -13,6 +13,7 @@ using Terraria.ObjectData;
 namespace PerfectheartMod.Tiles {
     public class LargeTestTubeTile : ModTile {
         protected int multiversalTranslocatorModuleType;
+        protected Dictionary<(int, int), int> testTubeSpawnState = new();
         protected Dictionary<(int, int), long> frameTimers = new();
 
         public override void SetStaticDefaults()
@@ -30,6 +31,14 @@ namespace PerfectheartMod.Tiles {
             AddMapEntry(new Microsoft.Xna.Framework.Color(255, 192, 203), Language.GetText("Mods.PerfectheartMod.Map.LargeTestTube"));
 
             multiversalTranslocatorModuleType = ModContent.ItemType<MultiversalTranslocatorModule>();
+        }
+
+        public override IEnumerable<Item> GetItemDrops(int i, int j)
+        {
+            yield return new Item(ModContent.ItemType<LargeTestTube>());
+            Tile tile = Main.tile[i, j];
+            if (tile.TileFrameX >= 90)
+                yield return new Item(ModContent.ItemType<MultiversalTranslocatorModule>());
         }
 
         public override void MouseOver(int i, int j)
@@ -68,7 +77,8 @@ namespace PerfectheartMod.Tiles {
             }
         }
 
-        public long GetLastFrameTimer(int x, int y) {
+        public long GetLastFrameTimer(int x, int y)
+        {
             if (frameTimers.TryGetValue((x, y), out long timer)) return timer;
 
             long currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -76,8 +86,22 @@ namespace PerfectheartMod.Tiles {
             return currentTime;
         }
 
-        public void SetLastFrameTimer(int x, int y) {
+        public void SetLastFrameTimer(int x, int y)
+        {
             frameTimers[(x, y)] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        }
+
+        public int GetTestTubeSpawnState(int topX, int topY)
+        {
+            if (testTubeSpawnState.TryGetValue((topX, topY), out int state)) return state;
+
+            testTubeSpawnState[(topX, topY)] = 0;
+            return 0;
+        }
+
+        public void SetTestTubeSpawnState(int topX, int topY, int state)
+        {
+            testTubeSpawnState[(topX, topY)] = state;
         }
 
         public override bool RightClick(int i, int j)
@@ -95,8 +119,7 @@ namespace PerfectheartMod.Tiles {
                         SetLastFrameTimer(x, y);
                     }
                 }
-                SetAllTileFrameX(i, j, 270, 0);
-                SoundEngine.PlaySound(SoundID.Tink);
+                SetAllTileFrameX(i, j, 180, 0);
                 return true;
             }
 
@@ -104,6 +127,7 @@ namespace PerfectheartMod.Tiles {
             {
                 Main.LocalPlayer.ConsumeItem(multiversalTranslocatorModuleType);
                 SetAllTileFrameX(i, j, 90, 0);
+                SoundEngine.PlaySound(SoundID.Unlock);
                 return true;
             }
             return false;
@@ -117,6 +141,7 @@ namespace PerfectheartMod.Tiles {
             long frameMs = DateTimeOffset.Now.ToUnixTimeMilliseconds() - GetLastFrameTimer(i, j);
             if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178)
             {
+                SetTestTubeSpawnState(topX, topY, 0);
                 if (frameMs > 1000 / 2) {
                     if (tile.TileFrameY >= 162)
                     {
@@ -129,17 +154,47 @@ namespace PerfectheartMod.Tiles {
                     SetLastFrameTimer(i, j);
                 }
             }
+            else if (tile.TileFrameX >= 180 && tile.TileFrameX <= 268)
+            {
+                int state = GetTestTubeSpawnState(topX, topY);
+                if (i == topX && j == topY) {
+                    if (frameMs > 1000) {
+                        SetTestTubeSpawnState(topX, topY, state + 1);
+                        SetLastFrameTimer(i, j);
+                    }
+                    if (state == 3) {
+                        SoundEngine.PlaySound(SoundID.Tink);
+                    }
+                }
+                if (state == 3) {
+                    tile.TileFrameX = (short)(270 + (i - topX) * 18);
+                    tile.TileFrameY = (short)(0 + (j - topY) * 18);
+                    SetLastFrameTimer(i, j);
+                    return;
+                }
+                if (state % 2 == 0)
+                {
+                    tile.TileFrameY = (short)(162 + (j - topY) * 18);
+                }
+                else
+                {
+                    tile.TileFrameY = (short)(0 + (j - topY) * 18);
+                }
+            }
             else if (tile.TileFrameX >= 270 && tile.TileFrameX <= 358)
             {
                 if (frameMs > 1000 * 2) {
-                    if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484 && i == topX && j == topY) {
-                        Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
-                        SoundEngine.PlaySound(SoundID.Shatter);
-                        NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
-                    }
-                    else if (tile.TileFrameY <= 322)
-                    {
-                        SoundEngine.PlaySound(SoundID.Tink);
+                    if (i == topX && j == topY) {
+                        if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484)
+                        {
+                            Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
+                            SoundEngine.PlaySound(SoundID.Shatter);
+                            NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
+                        }
+                        else if (tile.TileFrameY <= 322)
+                        {
+                            SoundEngine.PlaySound(SoundID.Tink);
+                        }
                     }
                     if (tile.TileFrameY < 486)
                     {

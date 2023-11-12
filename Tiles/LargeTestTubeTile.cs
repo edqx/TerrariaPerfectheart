@@ -183,8 +183,10 @@ namespace PerfectheartMod.Tiles {
             }
             else if (tile.TileFrameX >= 270 && tile.TileFrameX <= 358)
             {
-                if (frameMs > 1000 * 2) {
-                    if (i == topX && j == topY) {
+                if (frameMs > 1000 * 2)
+                {
+                    if (i == topX && j == topY)
+                    {
                         if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484)
                         {
                             Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using PerfectheartMod.Dusts;
 using PerfectheartMod.Items;
 using PerfectheartMod.NPCs;
 using Terraria;
@@ -189,8 +191,11 @@ namespace PerfectheartMod.Tiles {
                     {
                         if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484)
                         {
-                            Microsoft.Xna.Framework.Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
+                            Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
                             SoundEngine.PlaySound(SoundID.Shatter);
+                            for (int k = 0; k < 15; k++) {
+                                Dust.NewDustPerfect(pt - new Vector2(0, k * 57), ModContent.DustType<SpawnBeam>(), null, 0, Color.White, 1f);
+                            }
                             NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
                         }
                         else if (tile.TileFrameY <= 322)
@@ -199,7 +204,7 @@ namespace PerfectheartMod.Tiles {
                         }
                     }
                     if (tile.TileFrameY < 486)
-                    {
+                    {   
                         tile.TileFrameY += 162;
                     }
                     SetLastFrameTimer(i, j);

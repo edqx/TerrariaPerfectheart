@@ -192,11 +192,12 @@ namespace PerfectheartMod.Tiles {
                         if (tile.TileFrameY >= 324 && tile.TileFrameY <= 484)
                         {
                             Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
+                            SoundEngine.PlaySound(SoundID.Item121);
                             SoundEngine.PlaySound(SoundID.Shatter);
-                            for (int k = 0; k < 15; k++) {
-                                Dust.NewDustPerfect(pt - new Vector2(0, k * 142), ModContent.DustType<SpawnBeam>(), null, 0, Color.White, 1f);
+                            Dust.NewDustPerfect(pt - new Vector2(55, 0), ModContent.DustType<SpawnBeamSpawner>(), null, 0, Color.White, 1f);
+                            for (int k = 1; k < 15; k++) {
+                                Dust.NewDustPerfect(pt - new Vector2(55, k * 100), ModContent.DustType<SpawnBeam>(), null, 0, Color.White, 1f);
                             }
-                            NPC.SpawnBoss((int)pt.X, (int)pt.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
                         }
                         else if (tile.TileFrameY <= 322)
                         {

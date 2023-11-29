@@ -2,9 +2,11 @@
 using System.Drawing;
 using Microsoft.Xna.Framework;
 using perfectheart;
+using PerfectheartMod.Projectiles;
 using Terraria;
 using Terraria.Audio;
 using Terraria.Chat;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
@@ -92,7 +94,7 @@ namespace PerfectheartMod.NPCs
                     {
 						Main.NewText(Language.GetTextValue("Mods.PerfectheartMod.Dialogue.FightBegin"), Microsoft.Xna.Framework.Color.Pink);
 					}
-                    PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
+                    PerfectheartBossSystem.BossStage = FightStage.FightStarting;
                     Entity.boss = true;
                 }
             }
@@ -101,6 +103,21 @@ namespace PerfectheartMod.NPCs
         public override void OnKill()
         {
             PerfectheartBossSystem.BossStage = FightStage.Nil;
+            foreach (Projectile proj in Main.projectile) {
+                if (proj.type == ModContent.ProjectileType<AngelicWrath>()) {
+                    proj.Kill();
+                }
+            }
+        }
+
+        public override void OnSpawn(IEntitySource source)
+        {
+            for (int k = -50; k < 50; k++) {
+                Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), Entity.position + new Vector2(-100, 0).ToWorldCoordinates() + new Vector2(0, k * 100), Vector2.Zero, ModContent.ProjectileType<AngelicWrath>(), 1000, 0f, -1, 0f);
+            }
+            for (int k = -50; k < 50; k++) {
+                Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), Entity.position + new Vector2(100, 0).ToWorldCoordinates() + new Vector2(0, k * 100), Vector2.Zero, ModContent.ProjectileType<AngelicWrath>(), 1000, 0f, -1, 0f);
+            }
         }
 
         public override void AI()
@@ -112,17 +129,19 @@ namespace PerfectheartMod.NPCs
 
             if (PerfectheartBossSystem.BossStage == FightStage.FightStarting) {
                 Entity.position = Entity.position - new Vector2(0f, ascendVelocity);
+                Entity.despawnEncouraged = false;
                 ascendVelocity += 0.4f;
-                if (ascendVelocity > 16f) {
-                    ascendVelocity = 16f;
+                if (ascendVelocity > 32f) {
+                    ascendVelocity = 32f;
                 }
                 if (Entity.position.Y < 0) {
                     PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
                 }
                 return;
             }
-
-            // Entity.position = Main.player[Entity.target].position + new Microsoft.Xna.Framework.Vector2(250f, -50f);
+            if (PerfectheartBossSystem.BossStage == FightStage.PhaseOne) {
+                Entity.position = Main.player[Entity.target].position + new Vector2(250f, -50f);
+            }
         }
     }
 }

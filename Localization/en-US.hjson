@@ -39,5 +39,10 @@ Mods: {
 			FightAttempt3: Are you really, really sure?
 			FightBegin: ... Alright, then... If that is what you wish. I won't be holding back.
 		}
+
+		Projectiles: {
+			SpawnBeam.DisplayName: Spawn Beam
+			AngelicWrath.DisplayName: Angelic Wrath
+		}
 	}
 }

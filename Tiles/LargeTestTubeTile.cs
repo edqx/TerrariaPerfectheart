@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using PerfectheartMod.Dusts;
+using PerfectheartMod.Projectiles;
 using PerfectheartMod.Items;
-using PerfectheartMod.NPCs;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -197,9 +196,9 @@ namespace PerfectheartMod.Tiles {
                             Vector2 pt = new Point16(topX + 3, topY + 4).ToWorldCoordinates();
                             SoundEngine.PlaySound(SoundID.Item121);
                             SoundEngine.PlaySound(SoundID.Shatter);
-                            Dust.NewDustPerfect(pt - new Vector2(55, 0), ModContent.DustType<SpawnBeamSpawner>(), null, 0, Color.White, 1f);
+                            Projectile.NewProjectileDirect(WorldGen.GetItemSource_FromTileBreak(i, j), pt + new Vector2(10, 0), Vector2.Zero, ModContent.ProjectileType<SpawnBeam>(), 0, 0f, -1, 1f);
                             for (int k = 1; k < 15; k++) {
-                                Dust.NewDustPerfect(pt - new Vector2(55, k * 100), ModContent.DustType<SpawnBeam>(), null, 0, Color.White, 1f);
+                                Projectile.NewProjectileDirect(WorldGen.GetItemSource_FromTileBreak(i, j), pt + new Vector2(10, k * -100), Vector2.Zero, ModContent.ProjectileType<SpawnBeam>(), 0, 0f, -1, 0f);
                             }
                         }
                         else if (tile.TileFrameY <= 322)

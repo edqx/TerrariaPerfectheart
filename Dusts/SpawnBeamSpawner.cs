@@ -12,7 +12,6 @@ namespace PerfectheartMod.Dusts
         public override string Texture => "PerfectheartMod/Dusts/SpawnBeam";
         
 		public override bool Update(Dust dust) {
-                Mod.Logger.Info($"{dust.frame.Y} {dust.alpha}");
             if (Main.GameUpdateCount % 5 == 0 && dust.frame.Y >= 11 * 142 && dust.frame.Y < 12 * 142) {
                 Filters.Scene.Activate("PerfectheartSpawnFlash");
             } else if (dust.frame.Y >= 12 * 142 && dust.alpha == 254) {
@@ -36,7 +35,6 @@ namespace PerfectheartMod.Dusts
 
             base.Update(dust);
             if (dust.alpha == 254) {
-                Mod.Logger.Info("now progress the flash..");
                 dust.customData = 0;
             }
             return false;

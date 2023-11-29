@@ -137,6 +137,8 @@ namespace PerfectheartMod.Tiles {
 
         public override void AnimateIndividualTile(int type, int i, int j, ref int frameXOffset, ref int frameYOffset)
         {
+            if (Main.gamePaused) return;
+
             Tile tile = Main.tile[i, j];
             int topX = i - tile.TileFrameX % 90 / 18;
             int topY = j - tile.TileFrameY % 160 / 18;
@@ -144,7 +146,8 @@ namespace PerfectheartMod.Tiles {
             if (tile.TileFrameX >= 90 && tile.TileFrameX <= 178)
             {
                 SetTestTubeSpawnState(topX, topY, 0);
-                if (frameMs > 1000 / 2) {
+                if (frameMs > 1000 / 2)
+                {   
                     if (tile.TileFrameY >= 162)
                     {
                         tile.TileFrameY -= 162;

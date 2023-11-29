@@ -11,6 +11,6 @@ public class PerfectheartBossSceneEffect : ModSceneEffect
 
     public override bool IsSceneEffectActive(Player player)
     {
-        return PerfectheartBossSystem.BossStage == FightStage.PhaseOne;
+        return PerfectheartBossSystem.BossStage != FightStage.Nil && PerfectheartBossSystem.BossStage != FightStage.WaitingForFight;
     }
 }

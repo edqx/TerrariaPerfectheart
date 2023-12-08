@@ -23,6 +23,7 @@ namespace PerfectheartMod.NPCs
         public float ascendVelocity = 0f;
 
         public float startX = 0f;
+        public bool isAngelicWrathActive = false;
         public Dictionary<int, long> playersOutsideArena = new Dictionary<int, long>();
 
         public override void SetStaticDefaults()
@@ -116,8 +117,10 @@ namespace PerfectheartMod.NPCs
             }
         }
 
-        public override void OnSpawn(IEntitySource source)
-        {
+        bool CallAngelicWrath() {
+            if (isAngelicWrathActive) return false;
+
+            isAngelicWrathActive = true;
             float k = 0;
             startX = Entity.position.X;
             while (k < Main.maxTilesY)
@@ -144,6 +147,7 @@ namespace PerfectheartMod.NPCs
                 );
                 k += 6f;
             }
+            return true;
         }
 
         public override void AI()
@@ -153,20 +157,22 @@ namespace PerfectheartMod.NPCs
 				Entity.TargetClosest();
 			}
 
-            for (int i = 0; i < Main.player.Length; i++) {
-                Player player = Main.player[i];
-                if (player != null && player.active && !player.dead) {
-                    if (player.position.X <= startX - 100 * 16 || player.position.X >= startX + 100 * 16) {
-                        long timeMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                        if (playersOutsideArena.TryGetValue(i, out long existingTime)) {
-                            if (timeMs - existingTime >= 3000) {
-                                player.KillMe(PlayerDeathReason.ByNPC(Entity.whoAmI), 999999999, 0, false);
+            if (isAngelicWrathActive) {
+                for (int i = 0; i < Main.player.Length; i++) {
+                    Player player = Main.player[i];
+                    if (player != null && player.active && !player.dead) {
+                        if (player.position.X <= startX - 100 * 16 || player.position.X >= startX + 100 * 16) {
+                            long timeMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                            if (playersOutsideArena.TryGetValue(i, out long existingTime)) {
+                                if (timeMs - existingTime >= 3000) {
+                                    player.KillMe(PlayerDeathReason.ByNPC(Entity.whoAmI), 999999999, 0, false);
+                                }
+                                return;
                             }
-                            return;
+                            playersOutsideArena[i] = timeMs;
+                        } else {
+                            playersOutsideArena.Remove(i);
                         }
-                        playersOutsideArena[i] = timeMs;
-                    } else {
-                        playersOutsideArena.Remove(i);
                     }
                 }
             }
@@ -180,6 +186,7 @@ namespace PerfectheartMod.NPCs
                 }
                 if (Entity.position.Y < 0) {
                     PerfectheartBossSystem.BossStage = FightStage.PhaseOne;
+                    CallAngelicWrath();
                 }
                 return;
             }

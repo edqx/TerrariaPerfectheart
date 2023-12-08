@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Xml.Serialization;
 using Microsoft.Xna.Framework;
 using perfectheart;
 using PerfectheartMod.Projectiles;
@@ -19,6 +21,9 @@ namespace PerfectheartMod.NPCs
     {
         public int NumFightAttempts = 0;
         public float ascendVelocity = 0f;
+
+        public float startX = 0f;
+        public Dictionary<int, long> playersOutsideArena = new Dictionary<int, long>();
 
         public override void SetStaticDefaults()
         {
@@ -114,24 +119,25 @@ namespace PerfectheartMod.NPCs
         public override void OnSpawn(IEntitySource source)
         {
             float k = 0;
-            while (k < Main.ActiveWorldFileData.WorldSizeY)
+            startX = Entity.position.X;
+            while (k < Main.maxTilesY)
             {
                 Projectile.NewProjectileDirect(
                     NPC.GetSource_FromThis(),
-                    new Vector2(Entity.position.X - 100 * 16, k * 16),
+                    new Vector2(startX, 0f) + new Vector2(-100, k).ToWorldCoordinates(),
                     Vector2.Zero,
                     ModContent.ProjectileType<AngelicWrath>(),
-                    1000,
+                    0,
                     0f,
                     -1,
                     k
                 );
                 Projectile.NewProjectileDirect(
                     NPC.GetSource_FromThis(),
-                    new Vector2(Entity.position.X + 100 * 16, k * 16),
+                    new Vector2(startX, 0f) + new Vector2(100, k).ToWorldCoordinates(),
                     Vector2.Zero,
                     ModContent.ProjectileType<AngelicWrath>(),
-                    1000,
+                    0,
                     0f,
                     -1,
                     k
@@ -141,11 +147,29 @@ namespace PerfectheartMod.NPCs
         }
 
         public override void AI()
-        {
+         {
 			if (Entity.target < 0 || Entity.target == 255 || Main.player[Entity.target].dead || !Main.player[Entity.target].active)
             {
 				Entity.TargetClosest();
 			}
+
+            for (int i = 0; i < Main.player.Length; i++) {
+                Player player = Main.player[i];
+                if (player != null && player.active && !player.dead) {
+                    if (player.position.X <= startX - 100 * 16 || player.position.X >= startX + 100 * 16) {
+                        long timeMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                        if (playersOutsideArena.TryGetValue(i, out long existingTime)) {
+                            if (timeMs - existingTime >= 3000) {
+                                player.KillMe(PlayerDeathReason.ByNPC(Entity.whoAmI), 999999999, 0, false);
+                            }
+                            return;
+                        }
+                        playersOutsideArena[i] = timeMs;
+                    } else {
+                        playersOutsideArena.Remove(i);
+                    }
+                }
+            }
 
             if (PerfectheartBossSystem.BossStage == FightStage.FightStarting) {
                 Entity.position = Entity.position - new Vector2(0f, ascendVelocity);

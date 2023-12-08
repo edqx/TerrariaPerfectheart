@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Xml.Serialization;
 using Microsoft.Xna.Framework;
-using perfectheart;
+using PerfectheadMod.System;
+using PerfectheartMod.Enums;
 using PerfectheartMod.Projectiles;
 using Terraria;
-using Terraria.Audio;
 using Terraria.Chat;
 using Terraria.DataStructures;
-using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
-using Terraria.Map;
 using Terraria.ModLoader;
 
 namespace PerfectheartMod.NPCs
@@ -22,7 +18,10 @@ namespace PerfectheartMod.NPCs
         public int NumFightAttempts = 0;
         public float ascendVelocity = 0f;
 
-        public float startX = 0f;
+        public float gracefullyFloatDownStartY = 0f;
+        public uint gracefullyFloatDownFrame;
+
+        public float angelicWrathMidpointX = 0f;
         public bool isAngelicWrathActive = false;
         public Dictionary<int, long> playersOutsideArena = new Dictionary<int, long>();
 
@@ -117,17 +116,24 @@ namespace PerfectheartMod.NPCs
             }
         }
 
+        public override void OnSpawn(IEntitySource source)
+        {
+            gracefullyFloatDownStartY = Entity.position.Y;
+            gracefullyFloatDownFrame = Main.GameUpdateCount;
+            PerfectheartBossSystem.BossStage = FightStage.GracefullyFloatingDown;
+        }
+
         bool CallAngelicWrath() {
             if (isAngelicWrathActive) return false;
 
             isAngelicWrathActive = true;
             float k = 0;
-            startX = Entity.position.X;
+            angelicWrathMidpointX = Entity.position.X;
             while (k < Main.maxTilesY)
             {
                 Projectile.NewProjectileDirect(
                     NPC.GetSource_FromThis(),
-                    new Vector2(startX, 0f) + new Vector2(-100, k).ToWorldCoordinates(),
+                    new Vector2(angelicWrathMidpointX, 0f) + new Vector2(-100, k).ToWorldCoordinates(),
                     Vector2.Zero,
                     ModContent.ProjectileType<AngelicWrath>(),
                     0,
@@ -137,7 +143,7 @@ namespace PerfectheartMod.NPCs
                 );
                 Projectile.NewProjectileDirect(
                     NPC.GetSource_FromThis(),
-                    new Vector2(startX, 0f) + new Vector2(100, k).ToWorldCoordinates(),
+                    new Vector2(angelicWrathMidpointX, 0f) + new Vector2(100, k).ToWorldCoordinates(),
                     Vector2.Zero,
                     ModContent.ProjectileType<AngelicWrath>(),
                     0,
@@ -157,27 +163,69 @@ namespace PerfectheartMod.NPCs
 				Entity.TargetClosest();
 			}
 
-            if (isAngelicWrathActive) {
-                for (int i = 0; i < Main.player.Length; i++) {
+            long timeMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            if (isAngelicWrathActive)
+            {
+                for (int i = 0; i < Main.player.Length; i++)
+                {
                     Player player = Main.player[i];
-                    if (player != null && player.active && !player.dead) {
-                        if (player.position.X <= startX - 100 * 16 || player.position.X >= startX + 100 * 16) {
-                            long timeMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                            if (playersOutsideArena.TryGetValue(i, out long existingTime)) {
-                                if (timeMs - existingTime >= 3000) {
+                    if (player != null && player.active && !player.dead)
+                    {
+                        if (player.position.X <= angelicWrathMidpointX - 100 * 16 || player.position.X >= angelicWrathMidpointX + 100 * 16)
+                        {
+                            if (playersOutsideArena.TryGetValue(i, out long existingTime))
+                            {
+                                if (timeMs - existingTime >= 3000)
+                                {
                                     player.KillMe(PlayerDeathReason.ByNPC(Entity.whoAmI), 999999999, 0, false);
                                 }
-                                return;
+                                continue;
                             }
                             playersOutsideArena[i] = timeMs;
-                        } else {
+                        }
+                        else
+                        {
                             playersOutsideArena.Remove(i);
                         }
                     }
                 }
             }
 
-            if (PerfectheartBossSystem.BossStage == FightStage.FightStarting) {
+            Entity.spriteDirection = Entity.direction;
+
+            if (PerfectheartBossSystem.BossStage == FightStage.GracefullyFloatingDown || PerfectheartBossSystem.BossStage == FightStage.WaitingForFight) {
+                Player nearestPlayer = null;
+                float nearestPlayerDistX = 9999999f;
+                float entityMidPoint = Entity.position.X + (90 / 4);
+                for (int i = 0; i < Main.player.Length; i++)
+                {
+                    Player player = Main.player[i];
+                    if (player != null && !player.dead && player.active) {
+                        float distX = MathF.Abs(player.position.X - entityMidPoint);
+                        if (distX < nearestPlayerDistX) {
+                            nearestPlayerDistX = distX;
+                            nearestPlayer = player;
+                        }
+                    }
+                }
+                if (nearestPlayer != null) {
+                    Entity.direction = nearestPlayer.position.X > entityMidPoint ? 1 : -1;
+                }
+            }
+
+            if (PerfectheartBossSystem.BossStage == FightStage.GracefullyFloatingDown)
+            {
+                if (Main.GameUpdateCount - gracefullyFloatDownFrame < 120) return;
+
+                long diff = Main.GameUpdateCount - gracefullyFloatDownFrame - 120;
+                if (diff > 180) {
+                    PerfectheartBossSystem.BossStage = FightStage.WaitingForFight;
+                    return;
+                }
+                Entity.position.Y = gracefullyFloatDownStartY + diff / (float)180 * 7 * 16;
+            }
+            else if (PerfectheartBossSystem.BossStage == FightStage.FightStarting)
+            {
                 Entity.position = Entity.position - new Vector2(0f, ascendVelocity);
                 Entity.despawnEncouraged = false;
                 ascendVelocity += 0.4f;
@@ -190,7 +238,8 @@ namespace PerfectheartMod.NPCs
                 }
                 return;
             }
-            if (PerfectheartBossSystem.BossStage == FightStage.PhaseOne) {
+            else if (PerfectheartBossSystem.BossStage == FightStage.PhaseOne)
+            {
                 Entity.position = Main.player[Entity.target].position + new Vector2(250f, -50f);
             }
         }

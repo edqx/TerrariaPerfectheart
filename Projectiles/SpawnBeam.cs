@@ -49,7 +49,7 @@ namespace PerfectheartMod.Projectiles
                     if (Projectile.ai[1] >= 100) {
                         Projectile.Kill();
                     } else if (Projectile.ai[1] == 50) {
-                        NPC.SpawnBoss((int)Projectile.position.X, (int)Projectile.position.Y + 75, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
+                        NPC.SpawnBoss((int)Projectile.position.X, (int)Projectile.position.Y, ModContent.NPCType<PerfectheartBoss>(), Main.myPlayer);
                     }
                 } else {
                     Projectile.Kill();

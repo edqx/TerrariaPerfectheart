@@ -10,6 +10,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
+using Terraria.Map;
 using Terraria.ModLoader;
 
 namespace PerfectheartMod.NPCs
@@ -112,11 +113,30 @@ namespace PerfectheartMod.NPCs
 
         public override void OnSpawn(IEntitySource source)
         {
-            for (int k = -50; k < 50; k++) {
-                Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), Entity.position + new Vector2(-100, 0).ToWorldCoordinates() + new Vector2(0, k * 100), Vector2.Zero, ModContent.ProjectileType<AngelicWrath>(), 1000, 0f, -1, 0f);
-            }
-            for (int k = -50; k < 50; k++) {
-                Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), Entity.position + new Vector2(100, 0).ToWorldCoordinates() + new Vector2(0, k * 100), Vector2.Zero, ModContent.ProjectileType<AngelicWrath>(), 1000, 0f, -1, 0f);
+            float k = 0;
+            while (k < Main.ActiveWorldFileData.WorldSizeY)
+            {
+                Projectile.NewProjectileDirect(
+                    NPC.GetSource_FromThis(),
+                    new Vector2(Entity.position.X - 100 * 16, k * 16),
+                    Vector2.Zero,
+                    ModContent.ProjectileType<AngelicWrath>(),
+                    1000,
+                    0f,
+                    -1,
+                    k
+                );
+                Projectile.NewProjectileDirect(
+                    NPC.GetSource_FromThis(),
+                    new Vector2(Entity.position.X + 100 * 16, k * 16),
+                    Vector2.Zero,
+                    ModContent.ProjectileType<AngelicWrath>(),
+                    1000,
+                    0f,
+                    -1,
+                    k
+                );
+                k += 6f;
             }
         }
 
